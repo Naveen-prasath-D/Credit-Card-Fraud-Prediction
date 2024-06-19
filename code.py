@@ -1,19 +1,17 @@
-# Import necessary libraries
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score, \
-    matthews_corrcoef, confusion_matrix
-
+from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score, matthews_corrcoef, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import SMOTE
 
 # Define the load_data function to read the data from a CSV file
 def load_data(file_path):
     data = pd.read_csv(file_path)
     return data
-
 
 file_path = "ENTER THE FILE PATH"
 data = load_data(file_path)
@@ -22,6 +20,10 @@ data = load_data(file_path)
 print("Shape of the dataset:", data.shape)
 print("Description of the dataset:")
 print(data.describe())
+
+# Check for missing values
+print("Missing values in the dataset:")
+print(data.isnull().sum())
 
 # Check the distribution of fraud cases
 fraud_count = len(data[data['Class'] == 1])
@@ -47,8 +49,16 @@ plt.show()
 X = data.drop(['Class'], axis=1)
 Y = data['Class']
 
+# Feature scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Addressing class imbalance using SMOTE
+sm = SMOTE(random_state=42)
+X_res, Y_res = sm.fit_resample(X_scaled, Y)
+
 # Split data into training and testing sets
-xTrain, xTest, yTrain, yTest = train_test_split(X, Y, test_size=0.2, random_state=42)
+xTrain, xTest, yTrain, yTest = train_test_split(X_res, Y_res, test_size=0.2, random_state=42)
 
 # Build and train the Random Forest Classifier
 rfc = RandomForestClassifier()
